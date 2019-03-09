@@ -1,0 +1,17 @@
+{
+  "name": "serie-node",
+  "version": "1.0.0",
+  "description": "Exemple API project in Node js using express, body-parser and mongoDB, technology programation only 'JavaScript'.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Edwin Lima",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.4",
+    "mongoose": "^5.4.17"
+  }
+}
