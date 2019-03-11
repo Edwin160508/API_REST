@@ -1,7 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
+const mailer = require('../../modules/mailer');
 const authConfig = require('../../config/auth');
 const User = require('../models/User');
 
@@ -53,6 +55,47 @@ router.post('/authenticate', async (req, res) => {
 		user, 
 		token: generateToken({ id: user.id })
 	});
+});
+
+router.post('/forgot_password', async (req, res) => {
+	const { email } = req.body;
+	try{
+		const user = await User.findOne({ email });
+		if(!user)
+			return res.status(400).send({ error: 'User not found ' });
+
+		/*Gerar Token randomico de 20 caracters*/
+		const token = crypto.randomBytes(20).toString('hex');
+		/*Data e tempo Expiração do token*/ 
+		const now = new Date();
+		now.setHours(now.getHours() + 1);
+
+		/*Fazendo set dos campos*/ 
+		await User.findByIdAndUpdate(user.id, {
+			'$set': {
+				passwordResetToken: token,
+				passwordResetExpires: now
+			}
+		});
+
+		/*Processo de envio de email ao cliente*/
+		mailer.sendMail({
+			to: email,
+			from: 'contato@inovacaointeligentes.com.br',
+			template: 'auth/forgot_password',
+			context: { token }
+		}, (err)=>{
+			if(err){
+				console.log(err);
+				return res.status(400).send({ error: 'Cannot send forgot password email ' });
+			}
+			return res.send();
+		});
+
+	} catch (err) {
+		console.log(err);
+		return res.status(400).send({ error: 'Error on forgot password, try again ' });
+	}
 });
 
 module.exports = app => app.use('/auth', router);
